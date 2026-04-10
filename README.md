@@ -62,7 +62,11 @@ Batasi resource CPU dan memori
 
 🔸 Build dari lokal
 
-Backend tidak pakai image jadi, tapi dibuat dari source code sendiri (Flask).
+sourcecode lokal: folder energy-node, kita bikin file Dockerfile, dan dipanggil di docker-compose.yml 
+```
+energy-node:
+  build: ./energy-node
+```
 
 🔸 Dependency (depends_on)
 
