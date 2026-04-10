@@ -47,7 +47,9 @@ Melakukan build dari direktori lokal
 Hanya boleh berjalan jika arkhe-core sudah healthy
 Gunakan environment variables dari .env
 Batasi resource CPU dan memori
+
 💡 Penjelasan
+
 🔸 Build dari lokal
 
 Backend tidak pakai image jadi, tapi dibuat dari source code sendiri (Flask).
@@ -58,6 +60,7 @@ Backend tidak boleh jalan sebelum Redis siap → pakai:
 
 depends_on
 healthcheck
+
 🔸 Environment Variable
 
 Agar fleksibel, koneksi Redis tidak hardcode.
@@ -67,9 +70,13 @@ Agar fleksibel, koneksi Redis tidak hardcode.
 Untuk mencegah sistem overload:
 
 CPU max = 0.5
+
 Memory max = 256MB
+
 ⚙️ Implementasi
+
 📄 docker-compose.yml
+```bash
 energy-node:
   build: ./energy-node
   env_file:
@@ -82,13 +89,16 @@ energy-node:
       limits:
         cpus: "0.5"
         memory: 256M
+```
 📄 .env
+```bash
 REDIS_HOST=arkhe-core
 📄 Backend (Flask)
 r = redis.Redis(
     host=os.getenv("REDIS_HOST"),
     port=6379
 )
+```
 ### 1.c — Arkhe Core (Redis)
 📌 Soal
 Menggunakan image redis:alpine
@@ -108,6 +118,7 @@ Agar data tidak hilang saat container dimatikan → gunakan volume
 Untuk memastikan Redis siap sebelum backend berjalan.
 
 ⚙️ Implementasi
+```bash
 arkhe-core:
   image: redis:alpine
   volumes:
@@ -116,15 +127,22 @@ arkhe-core:
     test: ["CMD", "redis-cli", "ping"]
     interval: 5s
     retries: 5
+
 📄 Volume
+```bash
 volumes:
   redis_data:
+```
+
 ### 1.d — Monitoring Terminal (Nginx)
+
 📌 Soal
 Berfungsi sebagai reverse proxy
 Menggunakan bind mount untuk konfigurasi
 Sistem dapat diakses melalui http://localhost:7070
+
 💡 Penjelasan
+
 🔸 Reverse Proxy
 
 Nginx bertugas meneruskan request dari user ke backend.
@@ -134,7 +152,9 @@ Nginx bertugas meneruskan request dari user ke backend.
 Konfigurasi Nginx diambil dari file lokal → memudahkan edit tanpa rebuild image.
 
 ⚙️ Implementasi
+
 📄 docker-compose.yml
+```bash
 monitoring-terminal:
   image: nginx:latest
   ports:
@@ -143,7 +163,11 @@ monitoring-terminal:
     - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
   depends_on:
     - energy-node
+```
+
 📄 nginx/default.conf
+
+```bash
 server {
     listen 80;
 
@@ -155,20 +179,23 @@ server {
         proxy_pass http://energy-node:5000/energy;
     }
 }
+```
+
 🎯 Hasil Akhir
 
 Setelah semua service dijalankan:
-
-docker compose up --build
-
+```bash
+docker compose up -d --build
+```
 Aplikasi dapat diakses melalui:
 
-http://localhost:7070
+```http://localhost:7070```
  → halaman utama
-http://localhost:7070/energy
+```http://localhost:7070/energy```
  → menampilkan data energi
 💾 Uji Persistence
+```bash
 docker compose down
-docker compose up
-
+docker compose up -d
+```
 ➡️ Data tetap tersimpan karena menggunakan Docker Volume
