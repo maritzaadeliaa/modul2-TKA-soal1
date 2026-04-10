@@ -26,6 +26,7 @@ Terdapat 3 service: energy-node, arkhe-core, dan monitoring-terminal yang berada
 
 Semua container harus bisa saling berkomunikasi.
 Docker Compose secara default sudah menyediakan 1 network internal, jadi kita cukup mendefinisikan semua service dalam satu file.
+Contohnya, backend bisa mengakses Redis menggunakan hostname ‘arkhe-core’.”
 
 ⚙️ Implementasi
 
